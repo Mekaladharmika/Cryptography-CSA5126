@@ -1,0 +1,63 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <ctype.h>
+
+#define ALPHABET_SIZE 26
+#define MAX_PLAINTEXTS 100
+
+char* decrypt(char *ciphertext, int shift) {
+    int text_len = strlen(ciphertext);
+    char *plaintext = (char *)malloc((text_len + 1) * sizeof(char));
+    int i;
+    for ( i = 0; i < text_len; i++) {
+        if (isalpha(ciphertext[i])) {
+            char base = isupper(ciphertext[i]) ? 'A' : 'a';
+            plaintext[i] = ((ciphertext[i] - base - shift + ALPHABET_SIZE) % ALPHABET_SIZE) + base;
+        } else {
+            plaintext[i] = ciphertext[i];
+        }
+    }
+    plaintext[text_len] = '\0';
+    return plaintext;
+}
+
+int count_letters(char *text, int *count) {
+    int total_letters = 0;
+    int i;
+    for ( i = 0; text[i] != '\0'; i++) {
+        if (isalpha(text[i])) {
+            int index = tolower(text[i]) - 'a';
+            count[index]++;
+            total_letters++;
+        }
+    }
+    return total_letters;
+}
+
+int main() {
+    char ciphertext[] = "LCLLEWLJAZLQLDL";
+    int count[ALPHABET_SIZE] = {0};
+    int total_letters = count_letters(ciphertext, count);
+
+    int top = 10; // Number of top possible plaintexts to display
+    printf("Top %d possible plaintexts:\n", top);
+     int i,s;
+    for (s = 0; s < ALPHABET_SIZE; s++) {
+        char *possible_plaintext = decrypt(ciphertext, s);
+        int possible_count[ALPHABET_SIZE] = {0};
+        count_letters(possible_plaintext, possible_count);
+
+        double score = 0;
+        for ( i = 0; i < ALPHABET_SIZE; i++) {
+            double freq = (double)possible_count[i] / total_letters;
+            score += freq * (freq - 1);
+        }
+
+        printf("Shift: %2d | Plaintext: %s | Score: %.4f\n", s, possible_plaintext, score);
+
+        free(possible_plaintext);
+    }
+
+    return 0;
+}
